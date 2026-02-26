@@ -1,0 +1,22 @@
+# Core
+dbt-core
+dbt-postgres
+dbt-snowflake
+
+# Ingestion
+pandas
+sqlalchemy
+psycopg2-binary
+python-dotenv
+
+# Data Quality
+great-expectations
+
+# Airflow (for local dev — Docker image for production)
+apache-airflow
+apache-airflow-providers-slack
+
+# Development
+sqlfluff
+pytest
+black
