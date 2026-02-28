@@ -1,0 +1,137 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw Instacart data loaded directly from Kaggle CSVs"
+    database: "{{ env_var('RAW_DATABASE', 'instacart') }}"
+    schema: raw
+
+    freshness:
+      warn_after: {count: 24, period: hour}
+      error_after: {count: 48, period: hour}
+    loaded_at_field: _loaded_at
+
+    tables:
+      - name: orders
+        description: "All orders placed by users, one row per order"
+        columns:
+          - name: order_id
+            description: "Unique identifier for each order"
+            tests:
+              - unique
+              - not_null
+          - name: user_id
+            description: "User who placed the order"
+            tests:
+              - not_null
+          - name: order_number
+            description: "Sequential order count per user (1 = first order)"
+            tests:
+              - not_null
+          - name: order_dow
+            description: "Day of week (0=Sunday, 6=Saturday)"
+            tests:
+              - not_null
+              - accepted_values:
+                  values: [0, 1, 2, 3, 4, 5, 6]
+          - name: order_hour_of_day
+            description: "Hour the order was placed (0-23)"
+            tests:
+              - not_null
+          - name: days_since_prior_order
+            description: "Days since previous order. NULL for first orders."
+
+      - name: order_products_prior
+        description: "Products included in all prior orders (training set)"
+        columns:
+          - name: order_id
+            tests: [not_null]
+          - name: product_id
+            tests: [not_null]
+          - name: add_to_cart_order
+            description: "Sequence in which the item was added to the cart"
+            tests: [not_null]
+          - name: reordered
+            description: "1 if this product was reordered, 0 if first time"
+            tests:
+              - accepted_values:
+                  values: [0, 1]
+
+      - name: order_products_train
+        description: "Products in the most recent order for each user (eval set)"
+        columns:
+          - name: order_id
+            tests: [not_null]
+          - name: product_id
+            tests: [not_null]
+
+      - name: products
+        description: "Product catalog"
+        columns:
+          - name: product_id
+            tests: [unique, not_null]
+          - name: product_name
+            tests: [not_null]
+          - name: aisle_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'aisles')
+                  field: aisle_id
+          - name: department_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'departments')
+                  field: department_id
+
+      - name: aisles
+        columns:
+          - name: aisle_id
+            tests: [unique, not_null]
+          - name: aisle
+            tests: [not_null]
+
+      - name: departments
+        columns:
+          - name: department_id
+            tests: [unique, not_null]
+          - name: department
+            tests: [not_null]
+
+
+models:
+  - name: stg_orders
+    description: "Cleaned and renamed orders. One row per order."
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: user_id
+        tests: [not_null]
+      - name: is_first_order
+        description: "True when this is the user's first ever order"
+
+  - name: stg_products
+    description: "Cleaned product catalog joined with aisle and department names"
+    columns:
+      - name: product_id
+        tests: [unique, not_null]
+      - name: product_name
+        tests: [not_null]
+
+  - name: stg_order_products
+    description: "Unioned prior + train order line items. One row per order-product pair."
+    columns:
+      - name: order_product_id
+        description: "Surrogate key: order_id || product_id"
+        tests: [unique, not_null]
+
+  - name: stg_aisles
+    columns:
+      - name: aisle_id
+        tests: [unique, not_null]
+
+  - name: stg_departments
+    columns:
+      - name: department_id
+        tests: [unique, not_null]
