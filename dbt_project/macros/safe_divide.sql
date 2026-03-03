@@ -1,6 +1,6 @@
 /*
   safe_divide.sql
-  ─────────────────────────────────────────────────────────────────────────
+  
   Macro: Safely divide two numbers, returning NULL instead of divide-by-zero.
 
   Usage:
@@ -14,3 +14,4 @@
         ELSE {{ numerator }}::FLOAT / {{ denominator }}::FLOAT
     END
 {% endmacro %}
+
