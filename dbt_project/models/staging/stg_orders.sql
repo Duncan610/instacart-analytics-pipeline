@@ -18,15 +18,15 @@ WITH source AS (
 renamed AS (
     SELECT
         -- Primary key
-        order_id::INT                           AS order_id,
+        order_id::INT AS order_id,
 
         -- Foreign keys
-        user_id::INT                            AS user_id,
+        user_id::INT AS user_id,
 
         -- Order attributes
-        order_number::INT                       AS order_sequence_number,  -- renamed for clarity
-        order_dow::INT                          AS order_day_of_week,       -- 0=Sunday, 6=Saturday
-        order_hour_of_day::INT                  AS order_hour_of_day,
+        order_number::INT AS order_sequence_number,  -- renamed for clarity
+        order_dow::INT AS order_day_of_week,       -- 0=Sunday, 6=Saturday
+        order_hour_of_day::INT AS order_hour_of_day,
 
         -- name days
         CASE order_dow::INT
@@ -37,7 +37,7 @@ renamed AS (
             WHEN 4 THEN 'Thursday'
             WHEN 5 THEN 'Friday'
             WHEN 6 THEN 'Saturday'
-        END                                     AS order_day_name,
+        END AS order_day_name,
 
         -- Time bucket
         CASE
@@ -45,17 +45,17 @@ renamed AS (
             WHEN order_hour_of_day::INT BETWEEN 12 AND 16 THEN 'Afternoon'
             WHEN order_hour_of_day::INT BETWEEN 17 AND 20 THEN 'Evening'
             ELSE 'Night'
-        END                                     AS order_time_of_day,
+        END AS order_time_of_day,
 
         -- Null handling
-        days_since_prior_order::FLOAT           AS days_since_prior_order,
+        days_since_prior_order::FLOAT AS days_since_prior_order,
         CASE
             WHEN days_since_prior_order IS NULL THEN TRUE
             ELSE FALSE
-        END                                     AS is_first_order,
+        END AS is_first_order,
 
         
-        _loaded_at                              AS loaded_at
+        _loaded_at AS loaded_at
 
     FROM source
 )

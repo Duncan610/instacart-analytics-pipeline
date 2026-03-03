@@ -17,16 +17,17 @@ departments AS (
 
 final AS (
     SELECT
-        p.product_id::INT       AS product_id,
-        p.product_name          AS product_name,
-        p.aisle_id::INT         AS aisle_id,
-        a.aisle                 AS aisle_name,
-        p.department_id::INT    AS department_id,
-        d.department            AS department_name
+        p.product_id::INT AS product_id,
+        p.product_name AS product_name,
+        p.aisle_id::INT AS aisle_id,
+        a.aisle AS aisle_name,
+        p.department_id::INT AS department_id,
+        d.department AS department_name
 
-    FROM products      p
-    LEFT JOIN aisles      a ON p.aisle_id      = a.aisle_id
+    FROM products p
+    LEFT JOIN aisles a ON p.aisle_id = a.aisle_id
     LEFT JOIN departments d ON p.department_id = d.department_id
 )
 
 SELECT * FROM final
+
