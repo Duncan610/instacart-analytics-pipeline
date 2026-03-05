@@ -1,0 +1,81 @@
+version: 2
+
+models:
+  - name: dim_dates
+    description: "Calendar dimension. One row per date 2019-01-01 to 2019-12-31."
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+      - name: full_date
+        tests: [unique, not_null]
+      - name: is_weekend
+        tests: [not_null]
+
+  - name: dim_departments
+    description: "Department dimension. 21 rows. SCD Type 1."
+    columns:
+      - name: department_key
+        tests: [unique, not_null]
+      - name: department_id
+        tests: [unique, not_null]
+      - name: department_name
+        tests: [not_null]
+
+  - name: dim_products
+    description: "Product dimension. SCD Type 2. Filter is_current=TRUE for latest."
+    columns:
+      - name: product_key
+        tests: [unique, not_null]
+      - name: product_id
+        tests: [not_null]
+      - name: is_current
+        tests: [not_null]
+      - name: valid_from
+        tests: [not_null]
+
+  - name: dim_users
+    description: "User dimension with RFM segments. SCD Type 1. One row per user."
+    columns:
+      - name: user_key
+        tests: [unique, not_null]
+      - name: user_id
+        tests: [unique, not_null]
+      - name: customer_segment
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Champion','Loyal Customer','New Customer',
+                       'At Risk','Needs Attention','Cant Lose Them',
+                       'Hibernating','Unknown']
+
+  - name: fact_orders
+    description: "Central fact table. One row per order. Incremental."
+    columns:
+      - name: order_key
+        tests: [unique, not_null]
+      - name: order_id
+        tests: [unique, not_null]
+      - name: user_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_users')
+              field: user_key
+      - name: total_items
+        tests: [not_null]
+
+  - name: fact_order_products
+    description: "Line item fact. One row per order+product. Incremental."
+    columns:
+      - name: order_product_id
+        tests: [unique, not_null]
+      - name: order_id
+        tests: [not_null]
+      - name: product_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_key
+      - name: is_reordered
+        tests: [not_null]

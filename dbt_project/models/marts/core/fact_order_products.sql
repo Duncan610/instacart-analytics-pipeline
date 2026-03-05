@@ -46,7 +46,7 @@ SELECT
     op.order_id,                            -- → fact_orders
     p.product_key,                          -- → dim_products
     u.user_key,                             -- → dim_users
-    o.order_day_of_week                     AS date_key,
+    o.order_day_of_week AS date_key,
 
     -- Natural key kept for convenience
     op.product_id,
@@ -60,7 +60,7 @@ SELECT
         WHEN op.add_to_cart_order <= 5  THEN '1-5 Staples'
         WHEN op.add_to_cart_order <= 15 THEN '6-15 Regular'
         ELSE '16+ Browse'
-    END                                     AS cart_position_bucket,
+    END AS cart_position_bucket,
     op.order_set
 
 FROM order_products op
