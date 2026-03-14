@@ -59,7 +59,8 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_users')
+              arguments:
+                to: ref('dim_users')
               field: user_key
       - name: total_items
         tests: [not_null]
@@ -75,7 +76,8 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_products')
+              arguments:
+                to: ref('dim_products')
               field: product_key
       - name: is_reordered
         tests: [not_null]
