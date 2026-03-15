@@ -1,0 +1,69 @@
+name: dbt CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dbt_project/**'
+
+jobs:
+  dbt_ci:
+    name: dbt Slim CI
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: analytics
+          POSTGRES_PASSWORD: analytics
+          POSTGRES_DB: instacart_ci
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dbt
+        run: pip install dbt-postgres==1.8.2
+
+      - name: Create dbt profiles
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << EOF
+          instacart_pipeline:
+            target: ci
+            outputs:
+              ci:
+                type: postgres
+                host: localhost
+                port: 5432
+                user: analytics
+                password: analytics
+                dbname: instacart_ci
+                schema: dbt_ci
+                threads: 4
+          EOF
+
+      - name: Install dbt packages
+        run: cd dbt_project && dbt deps
+
+      - name: dbt compile
+        run: cd dbt_project && dbt compile --target ci
+
+      - name: dbt build
+        run: cd dbt_project && dbt build --target ci
