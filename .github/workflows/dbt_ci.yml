@@ -59,6 +59,34 @@ jobs:
                 threads: 4
           EOF
 
+      - name: Create raw schema and tables in CI
+        run: |
+          PGPASSWORD=analytics psql -h localhost -U analytics -d instacart_ci -c "
+            CREATE SCHEMA IF NOT EXISTS raw;
+            CREATE TABLE IF NOT EXISTS raw.orders (
+              order_id INT, user_id INT, eval_set TEXT,
+              order_number INT, order_dow INT,
+              order_hour_of_day INT, days_since_prior_order FLOAT
+            );
+            CREATE TABLE IF NOT EXISTS raw.products (
+              product_id INT, product_name TEXT,
+              aisle_id INT, department_id INT
+            );
+            CREATE TABLE IF NOT EXISTS raw.aisles (
+              aisle_id INT, aisle TEXT
+            );
+            CREATE TABLE IF NOT EXISTS raw.departments (
+              department_id INT, department TEXT
+            );
+            CREATE TABLE IF NOT EXISTS raw.order_products_prior (
+              order_id INT, product_id INT,
+              add_to_cart_order INT, reordered INT
+            );
+            CREATE TABLE IF NOT EXISTS raw.order_products_train (
+              order_id INT, product_id INT,
+              add_to_cart_order INT, reordered INT
+            );"
+
       - name: Install dbt packages
         run: cd dbt_project && dbt deps
 
