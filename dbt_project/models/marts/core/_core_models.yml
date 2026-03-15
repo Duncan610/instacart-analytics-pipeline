@@ -44,7 +44,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['Champion','Loyal Customer','New Customer',
+              arguments:
+                values: ['Champion','Loyal Customer','New Customer',
                        'At Risk','Needs Attention','Cant Lose Them',
                        'Hibernating','Unknown']
 
