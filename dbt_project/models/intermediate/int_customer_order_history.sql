@@ -21,8 +21,8 @@ order_stats AS (
         AVG(days_since_prior_order) AS avg_days_between_orders,
         MIN(days_since_prior_order) AS min_days_between_orders,
         MAX(days_since_prior_order) AS max_days_between_orders,
-        MODE() WITHIN GROUP (ORDER BY order_day_name) AS most_common_order_day,
-        MODE() WITHIN GROUP (ORDER BY order_hour_of_day) AS most_common_order_hour
+        MAX(order_day_name) AS most_common_order_day,
+        MAX(order_hour_of_day) AS most_common_order_hour
     FROM orders
     WHERE NOT is_first_order
     GROUP BY user_id

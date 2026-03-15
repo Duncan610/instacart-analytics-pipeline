@@ -55,7 +55,7 @@ renamed AS (
         END AS is_first_order,
 
         
-        _loaded_at AS loaded_at
+       CURRENT_TIMESTAMP AS loaded_at
 
     FROM source
 )
