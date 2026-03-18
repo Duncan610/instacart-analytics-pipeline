@@ -6,4 +6,5 @@ __pycache__/
 *.pyc
 .DS_Store
 logs/
-dbt_packages/
+dbt_packages/streamlit/.streamlit/secrets.toml
+.streamlit/secrets.toml

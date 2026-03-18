@@ -1,0 +1,23 @@
+instacart_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: analytics
+      password: analytics
+      dbname: instacart
+      schema: dbt_dev
+      threads: 4
+
+    prod:
+      type: snowflake
+      account: atgffjl-qeb15691
+      user: DUNCAN001
+      password: 2LGSMg7GUZ82CPb
+      role: TRANSFORMER
+      database: TRANSFORM_DB
+      warehouse: INSTACART_WH
+      schema: dbt_prod
+      threads: 4

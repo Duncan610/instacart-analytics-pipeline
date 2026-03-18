@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+
   postgres:
     image: postgres:16-alpine
     container_name: instacart-postgres
@@ -16,15 +17,18 @@ services:
       test: ["CMD", "pg_isready", "-U", "analytics"]
       interval: 10s
       retries: 5
+      start_period: 5s
 
   airflow-init:
-    image: apache/airflow:2.9.3-python3.11
+    build: .
     container_name: airflow-init
     depends_on:
       - postgres
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://analytics:analytics@postgres/instacart
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'instacart-pipeline-secret-key-2024'
+      AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT: '300'
     entrypoint: /bin/bash
     command:
       - -c
@@ -39,24 +43,33 @@ services:
           --password admin
 
   airflow-webserver:
-    image: apache/airflow:2.9.3-python3.11
+    build: .
     container_name: airflow-webserver
+    hostname: airflow-webserver
     depends_on:
       - airflow-init
     command: webserver
     ports:
       - "8080:8080"
+      - "8793:8793"
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://analytics:analytics@postgres/instacart
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'instacart-pipeline-secret-key-2024'
+      AIRFLOW__LOGGING__REMOTE_LOGGING: 'false'
+      AIRFLOW__WEBSERVER__WORKERS: '1'
+      AIRFLOW__WEBSERVER__WEB_SERVER_WORKER_TIMEOUT: '300'
+      AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT: '300'
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./dbt_project:/opt/airflow/dbt_project
+      - airflow-logs:/opt/airflow/logs
 
   airflow-scheduler:
-    image: apache/airflow:2.9.3-python3.11
+    build: .
     container_name: airflow-scheduler
+    hostname: airflow-scheduler
     depends_on:
       - airflow-init
     command: scheduler
@@ -64,9 +77,15 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://analytics:analytics@postgres/instacart
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'instacart-pipeline-secret-key-2024'
+      AIRFLOW__LOGGING__REMOTE_LOGGING: 'false'
+      AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT: '300'
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./dbt_project:/opt/airflow/dbt_project
+      - airflow-logs:/opt/airflow/logs
 
 volumes:
   postgres-data:
+  airflow-logs:
+
